@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
-# import numpy as np
+import math
+import numpy as np
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
@@ -15,6 +16,10 @@ mp_drawing = mp.solutions.drawing_utils
 # OpenCV video capture
 cap = cv2.VideoCapture(0)
 
+# Create blank canvas
+canvas = None
+prev_point = None
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -22,6 +27,8 @@ while cap.isOpened():
 
     # Flip the frame horizontally for a mirror view
     frame = cv2.flip(frame, 1)
+    if canvas is None:
+        canvas = np.zeros_like(frame)
 
     # Convert BGR to RGB
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -47,6 +54,34 @@ while cap.isOpened():
             cv2.circle(frame, (x, y), 10, (0, 0, 255), -1)
             cv2.putText(frame, f"Index Tip: ({x}, {y})", (x + 10, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+            
+            # Pinch Gesture
+            thumb = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
+            index = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+
+            # Gather x,y and w,h values from thumb and index
+            x1, y1 = int(thumb.x * w), int(thumb.y * h)
+            x2, y2 = int(index.x * w), int(index.y * h)
+
+            # Calculate distance between thumb and index finger
+            distance = math.hypot(x2 - x1, y2- y1)
+
+            if distance < 50:
+
+                if prev_point is not None:
+                    cv2.circle(frame, (x2, y2), 10, (255, 255, 255), -1)
+                    cv2.line(canvas, prev_point, (x2, y2), (255, 255, 255), 5)
+
+                prev_point = (x2, y2)
+
+            else:
+                prev_point = None  # Reset when not pinching
+
+    # Merge canvas with frame
+    frame = cv2.addWeighted(frame, 1, canvas, 1, 0)
+
+    # Show the result
+    cv2.imshow("Pinch Drawing", frame)
 
     # Show the frame
     cv2.imshow("Hand Tracking", frame)
