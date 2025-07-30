@@ -69,15 +69,15 @@ while cap.isOpened():
             if distance < 50:
 
                 if prev_point is not None:
-                    cv2.circle(frame, (x2, y2), 10, (255, 255, 255), -1)
-                    cv2.line(canvas, prev_point, (x2, y2), (255, 255, 255), 5)
+                    cv2.circle(frame, (x2, y2), 10, (255, 255, 255), -1) #turns index circle to white, indicating drawing is active
+                    cv2.line(canvas, prev_point, (x2, y2), (255, 255, 255), 5) # changes the line color
 
                 prev_point = (x2, y2)
 
             else:
                 prev_point = None  # Reset when not pinching
 
-    # Merge canvas with frame
+    # Merge canvas with frame, the values change the merge ratio.
     frame = cv2.addWeighted(frame, 1, canvas, 1, 0)
 
     # Show the result
