@@ -77,7 +77,7 @@ while cap.isOpened():
             # Calculate distance between thumb and index finger
             distance = math.hypot(x2 - x1, y2- y1)
 
-            if distance < 50:
+            if distance < 60:
 
                 if prev_point is not None:
                     cv2.circle(frame, (x2, y2), 10, (255, 255, 255), -1) #turns index circle to white, indicating drawing is active
